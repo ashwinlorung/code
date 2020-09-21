@@ -1,4 +1,3 @@
-# myrepo
-my first repo
+# code
 
-This is a readme edit for testing the branching feature in github
+This repo contains all code snippets that I find interesting.
