@@ -4,7 +4,7 @@ const getRandomNumber = (upperLimit) => {
 
 const mockFetch = (url) => {
   return new Promise((resolve, reject) => {
-    const number = getRandomNumber(1000);
+    const number = getRandomNumber(5000);
     console.log("Request made : " + number);
     setTimeout(() => {
       console.log("Response received : " + number);
@@ -26,6 +26,33 @@ const urls = [
   "/api/6",
   "/api/7",
 ];
+
+urls.forEach((url) => {
+  mockFetch(url).then((result) => {
+    console.log(result);
+  });
+});
+
+let sequence = Promise.resolve();
+urls.forEach((url) => {
+  const promise = mockFetch(url);
+  sequence = sequence
+    .then(() => {
+      return promise;
+    })
+    .then((result) => {
+      console.log(result);
+    });
+});
+
+let sequence2 = Promise.resolve("start");
+urls.forEach((url) => {
+  const promise = mockFetch(url);
+  sequence2 = sequence2.then((result) => {
+    console.log(result);
+    return promise;
+  });
+});
 
 Promise.all(urls.map(mockFetch))
   .then((value) => {
