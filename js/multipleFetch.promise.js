@@ -45,14 +45,15 @@ urls.forEach((url) => {
     });
 });
 
-let sequence2 = Promise.resolve("start");
-urls.forEach((url) => {
-  const promise = mockFetch(url);
-  sequence2 = sequence2.then((result) => {
-    console.log(result);
-    return promise;
-  });
-});
+urls.map(mockFetch).reduce((sequence, promise) => {
+  return sequence
+    .then((result) => {
+      return promise;
+    })
+    .then((result) => {
+      console.log(result);
+    });
+}, Promise.resolve());
 
 Promise.all(urls.map(mockFetch))
   .then((value) => {
