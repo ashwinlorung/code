@@ -1,50 +1,41 @@
-function MyPromise(fn) {
-  const states = {
-    PENDING: "PENDING",
-    FULFILLED: "FULFILLED",
-    REJECTED: "REJECTED"
-  }
-  let state;
-  let result;
-  let error;
-  let onFulfilled;
-  let onFailure;
-
-  function handleCallback(state) {
-    if(state === states.FULFILLED) {
-      onFUlfilled(result);
-    } else if(state === states.REJECTED) {
-      onFailure(error);
-    }
-  }
+const MyPromise = (function(){
+  function MyPromise(fn) {
+    let status;
+    let result;
+    let error;
+    const onFulfillQueue = [];
+    const onFailureQueue =[];
   
-  this.then = function(handleSuccess, handleFailure) {
-    onFulfilled = handleSuccess;
-    onFailure = onFailure;
-    handleCallback(state);
-  }
-
-  this.catch = function() {
-
-  }
-
-  function resolve(value) {
-    result = value;
-    state = "fulfilled";
-    if(onFulfilled) {
-      onFulfilled(result);
+    function resolve(value) {
+      result = value;
+      status = "fulfilled";
+      if(onFulfilled) {
+        onFulfilled(result);
+      }
     }
-  }
-  
-  function reject(err) {
-    error = err;
-    if(onFailure){
-      onFailure(error);
+    
+    function reject(err) {
+      error = err;
+      if(onFailure){
+        onFailure(error);
+      }
     }
+    
+    fn(resolve, reject);
   }
-  
-  fn(resolve, reject);
-}
+
+  MyPromise.prototype.then = function(handleSuccess, handleFailure) {
+    onFulfilledQueue.push(handleSuccess);
+    onFailureQueue.push(handleFailure);
+    handleCallback(status);
+  }
+
+  MyPromise.prototype.catch = function() {
+
+  }
+
+  return MyPromise;
+}());
 
 const myPromise = new MyPromise((resolve, reject) => {
   setTimeout(() => {
