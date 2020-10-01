@@ -1,0 +1,15 @@
+{
+  "name": "my-promise",
+  "version": "1.0.0",
+  "description": "conceptual implementation of Promise",
+  "main": "index.js",
+  "scripts": {
+    "test": "node_modules/.bin/tape *.test.js | node_modules/.bin/tap-spec"
+  },
+  "devDependencies": {
+    "tap-spec": "^4.1.1",
+    "tape": "^4.8.0"
+  },
+  "author": "ashwin",
+  "license": "ISC"
+}
