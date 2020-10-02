@@ -3,13 +3,13 @@ function MyPromise(executorFn) {
     get: function () {
       return "pending";
     },
-    configurable: true
+    configurable: true,
   });
   Object.defineProperty(this, "_result", {
     get: function () {
       return void 0;
     },
-    configurable: true
+    configurable: true,
   });
   Object.defineProperty(this, "_onFulfillQueue", { value: [] });
   Object.defineProperty(this, "_onFailureQueue", { value: [] });
@@ -18,14 +18,20 @@ function MyPromise(executorFn) {
 }
 
 MyPromise.prototype = Object.assign(MyPromise.prototype, {
+  _runOnFulfillQueue: function () {
+    var onFulfill;
+    while (this._onFulfillQueue.length > 0) {
+      onFulfill = this._onFulfillQueue.shift();
+      onFulfill.promise._resolve(onFulfill.handleSuccess(this._result));
+    }
+  },
+
   _resolve: function (value) {
     Object.defineProperty(this, "_result", { value: value });
-    Object.defineProperty(this, "_status", { value: "fulfilled"});
+    Object.defineProperty(this, "_status", { value: "fulfilled" });
     console.log(this._result);
 
-    this._onFulfillQueue.forEach(function (onFulfill) {
-      onFulfill(this._result);
-    }.bind(this));
+    this._runOnFulfillQueue();
   },
 
   _reject: function (reason) {
@@ -33,17 +39,21 @@ MyPromise.prototype = Object.assign(MyPromise.prototype, {
   },
 
   then: function (handleSuccess, handleFailure) {
-    this._onFulfillQueue.push(handleSuccess);
+    var newPromise = new MyPromise(function () {});
+    this._onFulfillQueue.push({
+      promise: newPromise,
+      handleSuccess: handleSuccess,
+    });
     this._onFailureQueue.push(handleFailure);
 
-    if(this._status === 'fulfilled') {
-      this._onFulfillQueue.forEach(function(onFulfill) {
-        onFulfill(this._result);
-      });
+    if (this._status === "fulfilled") {
+      this._runOnFulfillQueue();
     }
+
+    return newPromise;
   },
 
-  catch: function () {}
+  catch: function () {},
 });
 
 module.exports = MyPromise;
