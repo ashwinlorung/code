@@ -70,7 +70,7 @@ test.skip("resolution handlers can be chained", function (t) {
     });
 });
 
-test.skip("chaining works with non-promise return values", function (t) {
+test("chaining works with non-promise return values", function (t) {
   var testString = "foo";
 
   var promise = new MyPromise(function (resolve) {
@@ -89,7 +89,7 @@ test.skip("chaining works with non-promise return values", function (t) {
     });
 });
 
-test.skip("resolution handlers can be attached when promise is resolved", function (t) {
+test("resolution handlers can be attached when promise is resolved", function (t) {
   var testString = "foo";
 
   var promise = new MyPromise(function (resolve) {
@@ -108,7 +108,7 @@ test.skip("resolution handlers can be attached when promise is resolved", functi
   });
 });
 
-test.skip("calling resolve second time has no effect", function (t) {
+test("calling resolve second time has no effect", function (t) {
   var testString = "foo";
   var testString2 = "bar";
 
@@ -131,7 +131,7 @@ test.skip("calling resolve second time has no effect", function (t) {
   });
 });
 
-test.skip("rejection handler is called when promise is rejected", function (t) {
+test("rejection handler is called when promise is rejected", function (t) {
   var testError = new Error("Something went wrong");
 
   var promise = new MyPromise(function (resolve, reject) {
@@ -146,7 +146,7 @@ test.skip("rejection handler is called when promise is rejected", function (t) {
   });
 });
 
-test.skip("rejections are passed downstream", function (t) {
+test("rejections are passed downstream", function (t) {
   var testError = new Error("Something went wrong");
 
   var promise = new MyPromise(function (resolve, reject) {

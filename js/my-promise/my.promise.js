@@ -1,3 +1,5 @@
+const { onFinish } = require("tape");
+
 function MyPromise(executorFn) {
   Object.defineProperty(this, "_status", {
     get: function () {
@@ -18,24 +20,75 @@ function MyPromise(executorFn) {
 }
 
 MyPromise.prototype = Object.assign(MyPromise.prototype, {
-  _runOnFulfillQueue: function () {
-    var onFulfill;
+  _runOnFulfillHandlers: function () {
     while (this._onFulfillQueue.length > 0) {
-      onFulfill = this._onFulfillQueue.shift();
-      onFulfill.promise._resolve(onFulfill.handleSuccess(this._result));
+      var onFulfill = this._onFulfillQueue.shift();
+      try {
+        var returnValue = onFulfill.handleSuccess(this._result);
+      } catch(e) {
+        onFulfill.promise._reject(e);
+      }
+
+      // can use result.constructor.name or result.hasOwnProperty('then')
+      if (returnValue && returnValue instanceof MyPromise) {
+        returnValue
+          .then(function (r) {
+            onFulfill.promise._resolve(r);
+          })
+          .catch(function (e) {
+            onFulfill.promise._reject(e);
+          });
+      } else {
+        onFulfill.promise._resolve(returnValue);
+      }
+    }
+  },
+
+  _runOnFailureHandlers: function () {
+    while (this._onFailureQueue.length > 0) {
+      var onFailure = this._onFailureQueue.shift();
+
+      try {
+        var returnValue = onFailure.handleFailure(this._reason);
+      } catch (e) {
+        onFailure.promise._reject(e);
+      }
+
+      if (returnValue && returnValue instanceof MyPromise) {
+        returnValue
+          .then(function (r) {
+            onFailure.promise._resolve(r);
+          })
+          .catch(function (e) {
+            onFailure.promise._reject(e);
+          });
+      } else {
+        onFailure.promise._reject(returnValue);
+      }
     }
   },
 
   _resolve: function (value) {
-    Object.defineProperty(this, "_result", { value: value });
-    Object.defineProperty(this, "_status", { value: "fulfilled" });
-    console.log(this._result);
+    if (this._status === "pending") {
+      Object.defineProperty(this, "_result", { value: value });
+      Object.defineProperty(this, "_status", { value: "fulfilled" });
 
-    this._runOnFulfillQueue();
+      this._runOnFulfillHandlers();
+    }
   },
 
   _reject: function (reason) {
-    Object.defineProperty(this, "_status", "failure");
+    if (this._status === "pending") {
+      Object.defineProperty(this, "_reason", { value: reason });
+      Object.defineProperty(this, "_status", { value: "failure" });
+
+      this._runOnFailureHandlers();
+
+      while (this._onFailureQueue.length > 0) {
+        onFailure = this._onFailureQueue.shift();
+        onFailure.promise._reject(this._reason);
+      }
+    }
   },
 
   then: function (handleSuccess, handleFailure) {
@@ -44,16 +97,35 @@ MyPromise.prototype = Object.assign(MyPromise.prototype, {
       promise: newPromise,
       handleSuccess: handleSuccess,
     });
-    this._onFailureQueue.push(handleFailure);
+    if (typeof handleFailure === "function") {
+      this._onFailureQueue.push({
+        promise: newPromise,
+        handleFailure: handleFailure,
+      });
+    }
 
     if (this._status === "fulfilled") {
-      this._runOnFulfillQueue();
+      this._runOnFulfillHandlers();
+    } else if (this._status === "failure") {
+      newPromise._reject(this._reason);
     }
 
     return newPromise;
   },
 
-  catch: function () {},
+  catch: function (handleFailure) {
+    var newPromise = new MyPromise(function () {});
+    this._onFailureQueue.push({
+      promise: newPromise,
+      handleFailure: handleFailure,
+    });
+
+    if (this._status === "failure") {
+      this._runOnFailureHandlers();
+    }
+
+    return newPromise;
+  },
 });
 
 module.exports = MyPromise;
