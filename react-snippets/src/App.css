@@ -1,3 +1,12 @@
-.App {
+.links{
   text-align: center;
+}
+
+.links > a {
+  margin: 5px;
+}
+
+.screen {
+  padding: 14px;
+  border: 1px solid #f1f1f1;
 }
