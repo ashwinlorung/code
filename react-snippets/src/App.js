@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import Portals from "./Portals/Portal";
 import ToDo from "./Profiler/Profiler";
+import RefExamples from "./Refs/Refs";
 
 import './App.css';
 
@@ -12,6 +13,7 @@ function App() {
         <div className="links">
           <Link to="/portals">Portals</Link>
           <Link to="/profiler">Profiler</Link>
+          <Link to="/refs">Refs</Link>
         </div>
         <Switch className="screen">
           <Route path="/portals">
@@ -19,6 +21,9 @@ function App() {
           </Route>
           <Route path="/profiler">
             <ToDo />
+          </Route>
+          <Route path="/refs">
+            <RefExamples />
           </Route>
         </Switch>
       </Router>
